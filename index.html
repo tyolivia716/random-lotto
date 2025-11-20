@@ -1,603 +1,587 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<title>TWICE 應援電子書</title>
-
-<!-- 中文：Noto Sans TC（源泉圓體），英文：Times New Roman -->
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
-
-<style>
-    :root {
-        /* Pantone 812C approx hex */
-        --twice-main: #FF5FA2;
-        --bg-overlay: rgba(255,255,255,0.92);
-    }
-
+  <meta charset="UTF-8" />
+  <title>轉盤隨機抽獎</title>
+  <style>
     * {
-        box-sizing: border-box;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
     }
 
     body {
-        margin: 0;
-        font-family: 'Noto Sans TC', 'Times New Roman', serif;
-        background: url('your_twice_background.jpg') center/cover fixed no-repeat;
-        color: #222;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: url("itzy_bg.jpg"); /* 換背景圖時改這裡 */
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
     }
 
-    .app {
-        min-height: 100vh;
-        backdrop-filter: blur(4px);
-        background: rgba(0,0,0,0.35);
-        display: flex;
+    .overlay {
+      background: rgba(0, 0, 0, 0.85);
+      padding: 24px;
+      border-radius: 18px;
+      display: flex;
+      gap: 24px;
+      color: #fff;
+      max-width: 1100px;
+      width: 95%;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
     }
 
-    /* 側邊選單（現在整個隱藏） */
-    #sidebar {
-        display: none;
-        width: 220px;
-        background: rgba(0,0,0,0.85);
-        color: #fff;
-        padding: 16px 10px;
-        overflow-y: auto;
-    }
-
-    #sidebar h2 {
-        font-size: 18px;
-        margin: 0 0 12px;
-        text-align: center;
-        font-family: 'Noto Sans TC', 'Times New Roman', serif;
-    }
-
-    #sidebar ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    #sidebar li {
-        margin-bottom: 6px;
-    }
-
-    #sidebar button {
-        width: 100%;
-        border: none;
-        background: transparent;
-        color: #eee;
-        text-align: left;
-        padding: 6px 8px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        font-family: 'Noto Sans TC', 'Times New Roman', serif;
-    }
-
-    #sidebar button:hover,
-    #sidebar button.active {
-        background: var(--twice-main);
-        color: #111;
-    }
-
-    /* 左上角目錄鈕也隱藏 */
-    .menu-btn {
-        display: none;
-    }
-
-    /* 主內容區 */
-    .main {
-        flex: 1;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-    }
-
-    .page-card {
-        width: 100%;
-        max-width: 900px;
-        background: var(--bg-overlay);
-        border-radius: 16px;
-        padding: 20px 18px 28px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+    .left, .right {
+      flex: 1;
+      min-width: 0;
     }
 
     h1 {
-        margin-top: 0;
-        text-align: center;
-        font-family: 'Noto Sans TC', 'Times New Roman', serif;
+      margin-top: 0;
+      font-size: 22px;
+      text-align: center;
     }
 
-    .subtitle {
-        text-align: center;
-        color: #666;
-        margin-bottom: 16px;
-        font-size: 14px;
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: rgba(0,0,0,0.25);
+      border-radius: 50%;
     }
 
-    /* 首頁按鈕區 */
-    .home-btn-row {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
-        margin-bottom: 16px;
+    .pointer {
+      width: 0;
+      height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-bottom: 26px solid #ffeb3b;
+      margin: 8px auto 0;
+      filter: drop-shadow(0 0 6px rgba(0,0,0,0.7));
     }
 
-    .home-btn-row a {
-        text-decoration: none;
+    label {
+      font-size: 13px;
+      opacity: 0.9;
     }
 
-    .primary-link {
-        padding: 10px 16px;
-        border-radius: 10px;
-        border: 2px solid var(--twice-main);
-        background: white;
-        color: #111;
-        font-weight: 700;
-        font-size: 14px;
-        cursor: pointer;
-        display: inline-block;
-        min-width: 200px;
-        text-align: center;
-        font-family: 'Noto Sans TC', 'Times New Roman', serif;
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      resize: vertical;
+      border-radius: 10px;
+      border: none;
+      padding: 8px 10px;
+      font-size: 13px;
     }
 
-    .primary-link:hover {
-        background: var(--twice-main);
-        color: #111;
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      border-radius: 999px;
+      border: none;
+      padding: 6px 10px;
+      font-size: 13px;
+      margin-top: 4px;
     }
 
-    .song-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-        gap: 10px;
-        margin-top: 10px;
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
     }
 
-    .song-grid button {
-        padding: 8px 10px;
-        border-radius: 10px;
-        border: none;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        color: #fff;
-        transition: transform 0.15s;
-        font-family: 'Noto Sans TC', 'Times New Roman', serif;
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      background: #ffeb3b;
+      color: #333;
+      font-weight: 600;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
     }
 
-    .song-grid button:hover {
-        transform: translateY(-2px);
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
-    /* 應援色 */
-    .tzuyu   { background: #0C2D83; }
-    .mina    { background: #7EE8C3; color:#034036; }
-    .nayeon  { background: #AEE3FF; color:#003655; }
-    .jeongyeon { background: #9ED88D; color:#143A0A; }
-    .dahyun {
-        background: #FFFFFF;       /* 白色背景 */
-        color: #333333;            /* 深灰黑字 */
-        border: 2px solid #FF5FA2; /* Pantone 812C（主色）外框 */
-    }
-    .song-grid .dahyun {
-        color: #333333 !important;
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
     }
 
-    .chaeyoung { background: #FF4A4A; }
-    .jihyo   { background: #F7C63D; color:#5A3C00; }
-    .sana    { background: #A48DFF; }
-    .momo    { background: #FF8AB7; }
-    .normal  { background: var(--twice-main); }
-
-    /* 歌曲頁內容：圖片滿版 */
-    .song-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
+    button.secondary {
+      background: #ffffff22;
+      color: #fff;
+      border: 1px solid #ffffff55;
     }
 
-    #song-image {
-        width: 100vw;
-        height: 100vh;
-        max-height: 100vh;
-        border-radius: 0;
-        box-shadow: none;
-        object-fit: contain;
-        display: block;
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
     }
 
-    /* 左右懸浮箭頭 */
-    .page-arrow {
-        position: fixed;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 900;
-        width: 40px;
-        height: 40px;
-        border-radius: 20px;
-        border: none;
-        background: rgba(0,0,0,0.65);
-        color: #fff;
-        font-size: 20px;
-        cursor: pointer;
-        display: none; /* 預設隱藏，歌曲頁才顯示 */
-        align-items: center;
-        justify-content: center;
-        font-family: 'Noto Sans TC', 'Times New Roman', serif;
+    .section {
+      margin-bottom: 10px;
     }
 
-    .page-arrow.left { left: 8px; }
-    .page-arrow.right { right: 8px; }
-
-    /* 底部固定導覽列 */
-    .bottom-bar {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.85);
-        color: #fff;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        padding: 8px 10px;
-        z-index: 950;
-        font-size: 13px;
+    .result-wrapper {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-top: 6px;
     }
 
-    .bottom-bar button,
-    .bottom-bar a {
-        border: none;
-        border-radius: 999px;
-        padding: 6px 14px;
-        background: var(--twice-main);
-        color: #111;
-        font-weight: 700;
-        text-decoration: none;
-        font-family: 'Noto Sans TC', 'Times New Roman', serif;
+    .result-box {
+      flex: 1;
+      max-height: 180px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.35);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
     }
 
-    .bottom-bar button:disabled {
-        opacity: 0.5;
-        cursor: default;
+    .result-box p {
+      margin: 4px 0;
     }
 
-    .bottom-bar a.disabled {
-        opacity: 0.5;
-        pointer-events: none;
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #ffeb3b;
+      color: #333;
+      margin-right: 4px;
     }
 
-    /* 底部目錄面板 */
-    .dir-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.5);
-        display: none;
-        align-items: flex-end;
-        z-index: 960;
+    .status {
+      margin-top: 6px;
+      font-size: 13px;
+      opacity: 0.9;
+      text-align: center;
     }
 
-    .dir-overlay.open {
-        display: flex;
+    .hint {
+      font-size: 12px;
+      opacity: 0.8;
     }
 
-    .dir-sheet {
-        background: #222;
-        color: #fff;
-        width: 100%;
-        max-height: 75vh;
-        border-radius: 16px 16px 0 0;
-        padding: 10px 14px 14px;
-        overflow-y: auto;
+    #catImg {
+      max-width: 120px;
+      display: none;
+      filter: drop-shadow(0 0 8px rgba(0,0,0,0.7));
     }
 
-    .dir-title {
-        text-align: center;
-        margin-bottom: 8px;
-        font-weight: 700;
-        font-size: 16px;
+    .congrats-text {
+      margin-top: 6px;
+      font-size: 13px;
+      text-align: left;
     }
 
-    .dir-list {
-        list-style: none;
-        margin: 0;
-        padding: 0;
+    .mode-row {
+      display: flex;
+      gap: 12px;
+      font-size: 13px;
+      margin: 4px 0 6px;
+      flex-wrap: wrap;
     }
 
-    .dir-list li {
-        margin-bottom: 4px;
+    .mode-row label {
+      opacity: 1;
     }
 
-    .dir-list button {
-        width: 100%;
-        text-align: left;
-        border: none;
-        background: transparent;
-        color: #eee;
-        padding: 8px 6px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        font-family: 'Noto Sans TC', 'Times New Roman', serif;
+    .twinzy-row {
+      margin-top: 8px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
     }
 
-    .dir-list button.active,
-    .dir-list button:hover {
-        background: var(--twice-main);
-        color: #111;
+    .twinzy-row img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
     }
 
-    /* RWD：手機 */
-    @media (max-width: 768px) {
-        .app {
-            flex-direction: column;
-        }
+.twinzy-row {
+  position: absolute;
+  left: 50%;                 /* 水平置中 */
+  transform: translateX(-50%); /* 精準置中 */
+  bottom: 100px;             /* 貼在黑色框框下方，依 Twinzy 高度可調 */
+  display: flex;
+  gap: 12px;
+  z-index: 10;
+}
 
-        .main {
-            padding: 0;
-        }
+.twinzy-row img {
+  height: 70px;              /* 保持自然比例，可自行調整大小 */
+  width: auto;
+}
 
-        .page-card {
-            max-width: 100%;
-            width: 100%;
-            padding: 0;
-            background: transparent;
-            box-shadow: none;
-            border-radius: 0;
-        }
-    }
-</style>
+
+
+  </style>
 </head>
 <body>
-
-<!-- 左右翻頁懸浮箭頭 -->
-<button class="page-arrow left" id="arrow-left" onclick="goPrev()">‹</button>
-<button class="page-arrow right" id="arrow-right" onclick="goNext()">›</button>
-
-<div class="app">
-    <!-- 側邊目錄（已隱藏，不再使用） -->
-    <aside id="sidebar">
-        <h2>TWICE 目錄</h2>
-        <ul id="toc"></ul>
-    </aside>
-
-    <!-- 主頁面 -->
-    <main class="main" id="main-area">
-        <div class="page-card" id="page-content">
-            <!-- JS 會根據 currentPage 填內容 -->
-        </div>
-    </main>
-</div>
-
-<!-- 底部固定導覽列 -->
-<div class="bottom-bar">
-    <button id="bottom-prev" onclick="goPrev()">上一頁</button>
-    <button id="bottom-dir" onclick="toggleDirectory()">目錄</button>
-    <a id="bottom-video" href="#" target="_blank" rel="noopener noreferrer" class="disabled">影片</a>
-    <button id="bottom-next" onclick="goNext()">下一頁</button>
-</div>
-
-<!-- 底部目錄面板 -->
-<div id="directory-overlay" class="dir-overlay" onclick="directoryBackgroundClick(event)">
-    <div class="dir-sheet">
-        <div class="dir-title">TWICE 目錄</div>
-        <ul id="dir-list" class="dir-list"></ul>
+  <div class="overlay">
+    <div class="left">
+      <h1 id="pageTitle">轉盤隨機抽獎</h1>
+      <div class="pointer"></div>
+      <canvas id="wheel" width="380" height="380"></canvas>
+      <div class="status" id="statusText">請先設定抽獎名稱、獎品與參加者，按「套用設定」。</div>
+      <div class="btn-row" style="justify-content:center; margin-top:10px;">
+        <button id="spinBtn" disabled>🎯 開始抽獎（一次抽完所有獎品）</button>
+        <button id="resetBtn" class="secondary">重置結果</button>
+      </div>
     </div>
-</div>
 
-<script>
-    // 歌曲資料：index 1..23，0 是首頁
-    const songs = [
-        null,
-        { title: 'THIS IS FOR', display: 'THIS IS FOR', img: 'this_is_for.jpg',
-          url: 'https://www.youtube.com/watch?v=cfMFmH2qmyc&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao', className: 'normal' },
-        { title: 'STRATEGY', display: 'STRATEGY', img: 'strategy.jpg',
-          url: 'https://www.youtube.com/watch?v=kJItjpQoFgU&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=2', className: 'normal' },
-        { title: 'SET ME FREE', display: 'SET ME FREE', img: 'set_me_free.jpg',
-          url: 'https://www.youtube.com/watch?v=rYWvOyGg0b8&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=3', className: 'normal' },
-        { title: "I CAN'T STOP ME", display: "I CAN'T STOP ME", img: 'icsm.jpg',
-          url: 'https://www.youtube.com/watch?v=ESn0dkDh000&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=4', className: 'normal' },
-        { title: 'I GOT YOU', display: 'I GOT YOU', img: 'i_got_you.jpg',
-          url: 'https://www.youtube.com/watch?v=ZLAPXBbc0gk&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=5', className: 'normal' },
-        { title: 'RUN AWAY', display: 'RUN AWAY（TZUYU）', img: 'runaway.jpg',
-          url: 'https://www.youtube.com/watch?v=yPCn_7DMCw0&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=23', className: 'tzuyu' },
-        { title: 'DIVE IN', display: 'DIVE IN（TZUYU）', img: 'dive_in.jpg',
-          url: 'https://www.youtube.com/watch?v=HDteEotcxaY&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=12', className: 'tzuyu' },
-        { title: 'STONE COLD', display: 'STONE COLD（MINA）', img: 'stone_cold.jpg',
-          url: 'https://www.youtube.com/watch?v=OV0VpwnFhuY&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=13', className: 'mina' },
-        { title: 'MEEEEEE', display: 'MEEEEEE（NAYEON）', img: 'meeeeee.jpg',
-          url: 'https://www.youtube.com/watch?v=DsaP3UqbIss&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=14', className: 'nayeon' },
-        { title: 'FIX A DRINK', display: 'FIX A DRINK（JEONGYEON）', img: 'fix_a_drink.jpg',
-          url: 'https://www.youtube.com/watch?v=UBztpe1hh8c&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=15', className: 'jeongyeon' },
-        { title: 'CHESS', display: 'CHESS（DAHYUN）', img: 'chess.jpg',
-          url: 'https://www.youtube.com/watch?v=kr1mThC2n1s&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=16', className: 'dahyun' },
-        { title: 'SHOOT', display: 'SHOOT（CHAEYOUNG）', img: 'shoot.jpg',
-          url: 'https://www.youtube.com/watch?v=2lV1cTppl6c&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=17', className: 'chaeyoung' },
-        { title: 'ATM', display: 'ATM（JIHYO）', img: 'atm.jpg',
-          url: 'https://www.youtube.com/watch?v=S_3pHAHnfDU&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=18', className: 'jihyo' },
-        { title: 'DECAFFEINATED', display: 'DECAFFEINATED（SANA）', img: 'decaf.jpg',
-          url: 'https://www.youtube.com/watch?v=MPR4RbVACzk&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=19', className: 'sana' },
-        { title: 'MOVE LIKE THAT', display: 'MOVE LIKE THAT（MOMO）', img: 'move_like_that.jpg',
-          url: 'https://www.youtube.com/watch?v=zmn8BCIdzSE&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=20', className: 'momo' },
-        { title: 'FANCY', display: 'FANCY', img: 'fancy.jpg',
-          url: 'https://www.youtube.com/watch?v=--fw0TREtPA&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=6', className: 'normal' },
-        { title: 'WHAT IS LOVE？', display: 'WHAT IS LOVE？', img: 'what_is_love.jpg',
-          url: 'https://www.youtube.com/watch?v=iCMJcXXug3s&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=7', className: 'normal' },
-        { title: 'YES OR YES', display: 'YES OR YES', img: 'yes_or_yes.jpg',
-          url: 'https://www.youtube.com/watch?v=Udud0ZjVWCE&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=8', className: 'normal' },
-        { title: 'DANCE THE NIGHT AWAY', display: 'DANCE THE NIGHT AWAY', img: 'dancethenightaway.jpg',
-          url: 'https://www.youtube.com/watch?v=ve7PuS91s14&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=9', className: 'normal' },
-        { title: 'FEEL SPECIAL', display: 'FEEL SPECIAL', img: 'feel_special.jpg',
-          url: 'https://www.youtube.com/watch?v=IOmuE8keA7g&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=10', className: 'normal' },
-        { title: 'ONE SPARK', display: 'ONE SPARK', img: 'one_spark.jpg',
-          url: 'https://www.youtube.com/watch?v=_3KdaVwKpXw&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=11', className: 'normal' },
-        { title: 'TALK THAT TALK', display: 'TALK THAT TALK', img: 'talk_that_talk.jpg',
-          url: 'https://www.youtube.com/watch?v=KIsbsNjtltg&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=22', className: 'normal' },
-        { title: 'ME+YOU', display: 'ME+YOU', img: 'me_plus_you.jpg',
-          url: 'https://www.youtube.com/watch?v=Wfa3b_sp1Tk&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao&index=21', className: 'normal' },
-    ];
+    <div class="right">
+      <div class="section">
+        <label for="drawTitle">此次抽獎名稱：</label>
+        <input id="drawTitle" type="text" placeholder="例如：ITZY 台北小卡抽獎" />
+        <div class="hint">說明：會顯示在轉盤上方的大標題，也會套用到瀏覽器分頁標題。</div>
+      </div>
 
-    const totalPages = songs.length - 1;
-    let currentPage = 0; // 0 = 首頁
+      <div class="section">
+        <label for="prizes">獎品清單（一行一個）：</label>
+        <textarea id="prizes" placeholder="例如：&#10;一獎：簽名小卡&#10;二獎：應援扇&#10;三獎：照片組"></textarea>
+        <div class="hint">說明：有幾行獎品，就會抽出幾位中獎者。</div>
+      </div>
 
-    const pageContent = document.getElementById('page-content');
-    const dirOverlay = document.getElementById('directory-overlay');
-    const dirList = document.getElementById('dir-list');
-    const bottomPrev = document.getElementById('bottom-prev');
-    const bottomNext = document.getElementById('bottom-next');
-    const bottomVideo = document.getElementById('bottom-video');
-    const arrowLeft = document.getElementById('arrow-left');
-    const arrowRight = document.getElementById('arrow-right');
+      <div class="section">
+        <label>參加者設定：</label>
+        <div class="mode-row">
+          <label>
+            <input type="radio" name="participantMode" value="manual" checked />
+            手動輸入名單
+          </label>
+          <label>
+            <input type="radio" name="participantMode" value="count" />
+            輸入人數自動產生 1~N 號
+          </label>
+        </div>
 
-    function buildDirectory() {
-        dirList.innerHTML = '';
+        <div id="manualBox">
+          <textarea id="participants" placeholder="例如：&#10;小志&#10;小粒&#10;小留&#10;小領&#10;小娜"></textarea>
+          <div class="hint">說明：轉盤上的文字會顯示這裡的名字或號碼，每個人只會中一次。</div>
+        </div>
 
-        // 首頁
-        const liHome = document.createElement('li');
-        const btnHome = document.createElement('button');
-        btnHome.textContent = '首頁';
-        btnHome.dataset.page = '0';
-        btnHome.onclick = () => { currentPage = 0; closeDirectory(); render(); };
-        liHome.appendChild(btnHome);
-        dirList.appendChild(liHome);
+        <div id="countBox" style="display:none;">
+          <label for="participantCount">參加人數：</label>
+          <input id="participantCount" type="number" min="1" value="10" />
+          <div class="hint">說明：會自動產生「1號～N號」作為參加者。</div>
+        </div>
+      </div>
 
-        // 歌曲
-        for (let i = 1; i <= totalPages; i++) {
-            const li = document.createElement('li');
-            const btn = document.createElement('button');
-            btn.textContent = i + '. ' + songs[i].title;
-            btn.dataset.page = i;
-            btn.onclick = () => { currentPage = i; closeDirectory(); render(); };
-            li.appendChild(btn);
-            dirList.appendChild(li);
-        }
-    }
+      <div class="btn-row">
+        <button id="applyBtn">套用設定</button>
+      </div>
 
-    function updateDirActive() {
-        dirList.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-        const selector = currentPage === 0 ? 'button[data-page="0"]' : `button[data-page="${currentPage}"]`;
-        const activeBtn = dirList.querySelector(selector);
-        if (activeBtn) activeBtn.classList.add('active');
-    }
+      <div class="section">
+        <label>中獎結果：</label>
+        <div class="result-wrapper">
+          <div class="result-box" id="resultBox">
+            <p style="opacity:.7;">尚無結果</p>
+          </div>
+          <img id="catImg" src="cat.png" alt="有票貓貓" />
+<div class="twinzy-row">
+          <img src="twinzy1.png" alt="Twinzy 1" />
+          <img src="twinzy2.png" alt="Twinzy 2" />
+          <img src="twinzy3.png" alt="Twinzy 3" />
+          <img src="twinzy4.png" alt="Twinzy 4" />
+          <img src="twinzy5.png" alt="Twinzy 5" />
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
+    const spinBtn = document.getElementById("spinBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const applyBtn = document.getElementById("applyBtn");
+    const statusText = document.getElementById("statusText");
+    const resultBox = document.getElementById("resultBox");
+    const catImg = document.getElementById("catImg");
+    const drawTitleInput = document.getElementById("drawTitle");
+    const pageTitleEl = document.getElementById("pageTitle");
 
-    function render() {
-        if (currentPage === 0) {
-            renderHome();
-            // 首頁：箭頭隱藏、影片不可按
-            arrowLeft.style.display = 'none';
-            arrowRight.style.display = 'none';
-            bottomPrev.disabled = true;
-            bottomNext.disabled = false;
-            bottomVideo.classList.add('disabled');
-            bottomVideo.removeAttribute('href');
+    // 中心吐彩虹貓圖
+    const centerImg = new Image();
+    centerImg.src = "apple_rainbow.png"; // 記得準備這張圖
+    let centerImgLoaded = false;
+    centerImg.onload = () => {
+      centerImgLoaded = true;
+      drawWheel();
+    };
+
+    let prizes = [];
+    let participants = [];
+    let remainingPrizes = [];
+    let remainingParticipants = [];
+    let isDrawing = false;
+    let rotation = 0; // 目前角度（弧度）
+
+    // 參加者模式顯示切換
+    const manualBox = document.getElementById("manualBox");
+    const countBox = document.getElementById("countBox");
+    const participantModeRadios = document.querySelectorAll('input[name="participantMode"]');
+
+    participantModeRadios.forEach(radio => {
+      radio.addEventListener("change", () => {
+        const mode = document.querySelector('input[name="participantMode"]:checked').value;
+        if (mode === "manual") {
+          manualBox.style.display = "";
+          countBox.style.display = "none";
         } else {
-            renderSong(currentPage);
-            arrowLeft.style.display = 'flex';
-            arrowRight.style.display = 'flex';
-            bottomPrev.disabled = (currentPage === 0);
-            bottomNext.disabled = (currentPage === totalPages);
-            bottomVideo.classList.remove('disabled');
-            bottomVideo.href = songs[currentPage].url;
+          manualBox.style.display = "none";
+          countBox.style.display = "";
+        }
+      });
+    });
+
+    // 套用設定
+    applyBtn.addEventListener("click", () => {
+      const prizeLines = document.getElementById("prizes").value
+        .split("\n").map(s => s.trim()).filter(s => s !== "");
+
+      // 抽獎名稱
+      const customTitle = drawTitleInput.value.trim();
+      if (customTitle) {
+        pageTitleEl.textContent = customTitle;
+        document.title = customTitle;
+      } else {
+        pageTitleEl.textContent = "轉盤隨機抽獎";
+        document.title = "轉盤隨機抽獎";
+      }
+
+      // 參加者來源：手動或人數
+      const mode = document.querySelector('input[name="participantMode"]:checked').value;
+      let participantLines = [];
+
+      if (mode === "manual") {
+        participantLines = document.getElementById("participants").value
+          .split("\n").map(s => s.trim()).filter(s => s !== "");
+      } else {
+        const countValue = parseInt(document.getElementById("participantCount").value, 10);
+        if (isNaN(countValue) || countValue <= 0) {
+          alert("請輸入正確的參加人數。");
+          return;
+        }
+        participantLines = Array.from({ length: countValue }, (_, i) => `${i + 1}號`);
+      }
+
+      if (prizeLines.length === 0) {
+        alert("請至少輸入一個獎品。");
+        return;
+      }
+      if (participantLines.length === 0) {
+        alert("請至少輸入一個參加者。");
+        return;
+      }
+      if (participantLines.length < prizeLines.length) {
+        alert("參加者數量必須大於或等於獎品數量。");
+        return;
+      }
+
+      prizes = prizeLines;
+      participants = participantLines;
+      remainingPrizes = [...prizes];
+      remainingParticipants = [...participants];
+      rotation = 0;
+      drawWheel();
+
+      spinBtn.disabled = false;
+      catImg.style.display = "none";
+      statusText.textContent = "設定完成，可以開始抽獎囉！";
+      resultBox.innerHTML = '<p style="opacity:.7;">尚無結果</p>';
+    });
+
+    // 畫轉盤（顯示的是參加者）
+    function drawWheel() {
+      const count = remainingParticipants.length;
+      const { width, height } = canvas;
+      const cx = width / 2;
+      const cy = height / 2;
+      const radius = Math.min(cx, cy) - 8;
+
+      ctx.clearRect(0, 0, width, height);
+
+      if (count === 0) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.fillStyle = "#ffffffcc";
+        ctx.textAlign = "center";
+        ctx.font = "18px 'Noto Sans TC'";
+        ctx.fillText("沒有人可以抽了 😹", 0, 0);
+        ctx.restore();
+        return;
+      }
+
+      const anglePer = (Math.PI * 2) / count;
+
+      for (let i = 0; i < count; i++) {
+        const startAngle = rotation + i * anglePer;
+        const endAngle = startAngle + anglePer;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, startAngle, endAngle);
+        ctx.closePath();
+
+        // Twinzy 低飽和五色
+        const colors = [
+          "#A8A5A5", // 灰
+          "#9DD7D3", // 薄荷綠
+          "#6FA3CC", // 中藍
+          "#F0D097", // 淡黃
+          "#F3CBD4"  // 淡粉
+        ];
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(255,255,255,0.85)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        const textAngle = startAngle + anglePer / 2;
+        ctx.rotate(textAngle);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#fff";
+        ctx.font = "14px 'Noto Sans TC'";
+        ctx.fillText(remainingParticipants[i], radius - 10, 5);
+        ctx.restore();
+      }
+
+      // 中心：吐彩虹蘋果貓
+      if (centerImgLoaded) {
+        const centerSize = radius * 0.6; // 中心圖大小
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, centerSize / 2, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(centerImg, cx - centerSize / 2, cy - centerSize / 2, centerSize, centerSize);
+        ctx.restore();
+      } else {
+        // 圖還沒載完時的備用圈圈
+        ctx.beginPath();
+        ctx.arc(cx, cy, 40, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.7)";
+        ctx.fill();
+        ctx.fillStyle = "#ffeb3b";
+        ctx.font = "16px 'Noto Sans TC'";
+        ctx.textAlign = "center";
+        ctx.fillText("抽獎", cx, cy + 5);
+      }
+    }
+
+    // 轉一次盤，抽出一個得獎者（對應一個獎品）
+    function spinOnceForPrize(prizeName) {
+      return new Promise((resolve) => {
+        const count = remainingParticipants.length;
+        const anglePer = (Math.PI * 2) / count;
+
+        // 隨機決定這一輪停在哪一個人
+        const targetIndex = Math.floor(Math.random() * count);
+        const targetAngle = (Math.PI / 2) - (targetIndex * anglePer) - anglePer / 2; // 指針在上方
+
+        const baseRotations = Math.PI * 2 * 5;
+        const finalRotation = baseRotations + targetAngle;
+
+        const duration = 2200;
+        const start = performance.now();
+        const initialRotation = rotation;
+
+        function animate(now) {
+          const elapsed = now - start;
+          const t = Math.min(elapsed / duration, 1);
+          const ease = 1 - Math.pow(1 - t, 3);
+          rotation = initialRotation + (finalRotation - initialRotation) * ease;
+          drawWheel();
+
+          if (t < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            rotation = finalRotation % (Math.PI * 2);
+            drawWheel();
+
+            // 動畫結束，選出得獎者
+            const winner = remainingParticipants.splice(targetIndex, 1)[0];
+            resolve({ prize: prizeName, winner });
+          }
         }
 
-        updateDirActive();
+        requestAnimationFrame(animate);
+      });
     }
 
-    function renderHome() {
-        pageContent.innerHTML = `
-            <h1>TWICE 台灣演唱會 應援電子書</h1>
-            <div class="subtitle">選一首歌，就能看到對應的應援圖片與 YouTube 應援影片 🎀</div>
-            <div class="home-btn-row">
-                <a class="primary-link"
-                   href="https://www.youtube.com/watch?v=cfMFmH2qmyc&list=PLou4rSGgyTxa3Nqtb4JMR-i6oHLuiP8ao"
-                   target="_blank" rel="noopener noreferrer">
-                    ▶ 直接前往 YouTube 應援影片（第一首）
-                </a>
-                <a class="primary-link"
-                   href="https://music.youtube.com/playlist?list=PLkfR5QYlGSqKPCqaMxqiPi_vHSsUmpYwN&si=YVW92kOOICQjq3ZI"
-                   target="_blank" rel="noopener noreferrer">
-                    🎵 打開 YouTube Music 演唱會歌單
-                </a>
-            </div>
-            <h3 style="margin-top:18px; text-align:center;">歌曲選單</h3>
-            <div class="song-grid" id="home-song-grid"></div>
-        `;
+    // 開始抽獎：一次抽完所有獎品
+    async function startDraw() {
+      if (isDrawing) return;
+      if (remainingPrizes.length === 0) {
+        alert("沒有可抽的獎品。");
+        return;
+      }
+      if (remainingParticipants.length < remainingPrizes.length) {
+        alert("參加者數量不足以分配所有獎品。");
+        return;
+      }
 
-        const grid = document.getElementById('home-song-grid');
-        for (let i = 1; i <= totalPages; i++) {
-            const btn = document.createElement('button');
-            btn.textContent = songs[i].title;
-            btn.classList.add(songs[i].className || 'normal');
-            btn.onclick = () => { currentPage = i; render(); };
-            grid.appendChild(btn);
-        }
+      isDrawing = true;
+      spinBtn.disabled = true;
+      catImg.style.display = "none";
+      if (resultBox.innerHTML.includes("尚無結果")) {
+        resultBox.innerHTML = "";
+      }
+
+      statusText.textContent = "蘋果貓貓努力幫你抽獎中…";
+
+      const currentPrizes = [...remainingPrizes];
+      remainingPrizes = []; // 抽獎視為這一輪獎品全部用掉
+
+      for (let i = 0; i < currentPrizes.length; i++) {
+        const prizeName = currentPrizes[i];
+        const { prize, winner } = await spinOnceForPrize(prizeName);
+
+        const p = document.createElement("p");
+        p.innerHTML = `<span class="badge">🎁 ${prize}</span> ➜ <strong>${winner}</strong>`;
+        resultBox.appendChild(p);
+
+        statusText.textContent = `抽中：${prize} ➜ ${winner}`;
+        await new Promise(r => setTimeout(r, 300)); // 每輪之間稍微停一下
+      }
+
+      statusText.textContent = "🎉恭喜所有中獎者喵喵喵喵喵喵喵🎉";
+      catImg.style.display = "block";
+      isDrawing = false;
     }
 
-    function renderSong(idx) {
-        const song = songs[idx];
-        pageContent.innerHTML = `
-            <div class="song-content">
-                <img id="song-image" src="${song.img}" alt="${song.display}">
-            </div>
-        `;
-    }
+    spinBtn.addEventListener("click", startDraw);
 
-    // 翻頁控制
-    function goHome() {
-        currentPage = 0;
-        render();
-    }
+    resetBtn.addEventListener("click", () => {
+      remainingPrizes = [...prizes];
+      remainingParticipants = [...participants];
+      rotation = 0;
+      drawWheel();
+      resultBox.innerHTML = '<p style="opacity:.7;">尚無結果</p>';
+      statusText.textContent = "已重置結果，可以重新開始抽。";
+      catImg.style.display = "none";
+      spinBtn.disabled = remainingPrizes.length === 0 || remainingParticipants.length === 0;
+    });
 
-    function goTo(idx) {
-        if (idx < 0 || idx > totalPages) return;
-        currentPage = idx;
-        render();
-    }
-
-    function goPrev() {
-        if (currentPage > 0) {
-            currentPage -= 1;
-            render();
-        }
-    }
-
-    function goNext() {
-        if (currentPage < totalPages) {
-            currentPage += 1;
-            render();
-        }
-    }
-
-    // 底部目錄面板控制
-    function toggleDirectory() {
-        dirOverlay.classList.toggle('open');
-    }
-
-    function closeDirectory() {
-        dirOverlay.classList.remove('open');
-    }
-
-    function directoryBackgroundClick(e) {
-        if (e.target.id === 'directory-overlay') {
-            closeDirectory();
-        }
-    }
-
-    // 初始化
-    buildDirectory();
-    render();
-
-    // 讓按鈕可以叫到的函式掛到 window
-    window.goHome = goHome;
-    window.goPrev = goPrev;
-    window.goNext = goNext;
-    window.goTo = goTo;
-    window.toggleDirectory = toggleDirectory;
-    window.directoryBackgroundClick = directoryBackgroundClick;
-</script>
-
+    // 初始畫面
+    drawWheel();
+  </script>
 </body>
 </html>
